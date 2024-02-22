@@ -27,10 +27,10 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	webappv1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1"
+	appscodecomv1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
 )
 
-var _ = Describe("Guestbook Controller", func() {
+var _ = Describe("Employee Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -40,13 +40,13 @@ var _ = Describe("Guestbook Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		guestbook := &webappv1.Guestbook{}
+		employee := &appscodecomv1alpha1.Employee{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind Guestbook")
-			err := k8sClient.Get(ctx, typeNamespacedName, guestbook)
+			By("creating the custom resource for the Kind Employee")
+			err := k8sClient.Get(ctx, typeNamespacedName, employee)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &webappv1.Guestbook{
+				resource := &appscodecomv1alpha1.Employee{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -59,16 +59,16 @@ var _ = Describe("Guestbook Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &webappv1.Guestbook{}
+			resource := &appscodecomv1alpha1.Employee{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance Guestbook")
+			By("Cleanup the specific resource instance Employee")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &GuestbookReconciler{
+			controllerReconciler := &EmployeeReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 			}

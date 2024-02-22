@@ -13,8 +13,8 @@ resources:
     namespaced: true
   controller: true
   domain: my.domain
-  group: webapp
-  kind: Guestbook
-  path: github.com/sheikh-arman/appscode-kubebuilder/api/v1
-  version: v1
+  group: appscode.com
+  kind: Employee
+  path: github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1
+  version: v1alpha1
 version: "3"
