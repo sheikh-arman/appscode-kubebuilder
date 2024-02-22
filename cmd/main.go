@@ -34,7 +34,7 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	appscodecomv1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
+	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
 	"github.com/sheikh-arman/appscode-kubebuilder/internal/controller"
 	//+kubebuilder:scaffold:imports
 )
@@ -47,7 +47,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(appscodecomv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(employeev1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -104,7 +104,7 @@ func main() {
 		WebhookServer:          webhookServer,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "50e6eaa1.my.domain",
+		LeaderElectionID:       "50e6eaa1.appscode.com",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly

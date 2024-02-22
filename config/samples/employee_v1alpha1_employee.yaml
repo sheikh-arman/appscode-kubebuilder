@@ -1,4 +1,4 @@
-apiVersion: appscode.com.my.domain/v1alpha1
+apiVersion: employee.appscode.com/v1alpha1
 kind: Employee
 metadata:
   labels:

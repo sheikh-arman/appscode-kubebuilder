@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	appscodecomv1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
+	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
 )
 
 // EmployeeReconciler reconciles a Employee object
@@ -33,9 +33,9 @@ type EmployeeReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=appscode.com.my.domain,resources=employees,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=appscode.com.my.domain,resources=employees/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=appscode.com.my.domain,resources=employees/finalizers,verbs=update
+//+kubebuilder:rbac:groups=employee.appscode.com,resources=employees,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=employee.appscode.com,resources=employees/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=employee.appscode.com,resources=employees/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -57,6 +57,6 @@ func (r *EmployeeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 // SetupWithManager sets up the controller with the Manager.
 func (r *EmployeeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&appscodecomv1alpha1.Employee{}).
+		For(&employeev1alpha1.Employee{}).
 		Complete(r)
 }
