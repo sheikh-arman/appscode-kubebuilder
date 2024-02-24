@@ -34,8 +34,10 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
-	"github.com/sheikh-arman/appscode-kubebuilder/internal/controller"
+	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/employee/v1alpha1"
+	otherv1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/other/v1alpha1"
+	employeecontroller "github.com/sheikh-arman/appscode-kubebuilder/internal/controller/employee"
+	othercontroller "github.com/sheikh-arman/appscode-kubebuilder/internal/controller/other"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -48,6 +50,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(employeev1alpha1.AddToScheme(scheme))
+	utilruntime.Must(otherv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -122,7 +125,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.EmployeeReconciler{
+	if err = (&employeecontroller.EmployeeReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Employee")
+		os.Exit(1)
+	}
+	if err = (&othercontroller.EmployeeReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

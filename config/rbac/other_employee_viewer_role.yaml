@@ -1,0 +1,27 @@
+# permissions for end users to view employees.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: employee-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: appscode-kubebuilder
+    app.kubernetes.io/part-of: appscode-kubebuilder
+    app.kubernetes.io/managed-by: kustomize
+  name: employee-viewer-role
+rules:
+- apiGroups:
+  - other.appscode.com
+  resources:
+  - employees
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - other.appscode.com
+  resources:
+  - employees/status
+  verbs:
+  - get

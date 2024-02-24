@@ -1,0 +1,12 @@
+apiVersion: other.appscode.com/v1alpha1
+kind: Employee
+metadata:
+  labels:
+    app.kubernetes.io/name: employee
+    app.kubernetes.io/instance: employee-sample
+    app.kubernetes.io/part-of: appscode-kubebuilder
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: appscode-kubebuilder
+  name: employee-sample
+spec:
+  # TODO(user): Add fields here

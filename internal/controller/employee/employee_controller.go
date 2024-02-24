@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package employee
 
 import (
 	"context"
@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
+	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/employee/v1alpha1"
 )
 
 // EmployeeReconciler reconciles a Employee object

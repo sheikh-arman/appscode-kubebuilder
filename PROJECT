@@ -5,6 +5,7 @@
 domain: appscode.com
 layout:
 - go.kubebuilder.io/v4
+multigroup: true
 projectName: appscode-kubebuilder
 repo: github.com/sheikh-arman/appscode-kubebuilder
 resources:
@@ -15,6 +16,15 @@ resources:
   domain: appscode.com
   group: employee
   kind: Employee
-  path: github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1
+  path: github.com/sheikh-arman/appscode-kubebuilder/api/employee/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: appscode.com
+  group: other
+  kind: Employee
+  path: github.com/sheikh-arman/appscode-kubebuilder/api/other/v1alpha1
   version: v1alpha1
 version: "3"

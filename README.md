@@ -1,15 +1,20 @@
 # appscode-kubebuilder
 
+
 download kubebuilder and install locally.
+
 curl -L -o kubebuilder "https://go.kubebuilder.io/dl/latest/$(go env GOOS)/$(go env GOARCH)"
 
 chmod +x kubebuilder
 
 sudo mv kubebuilder /usr/local/bin/
 
-kubebuilder init --domain appscode.com 
+kubebuilder init --domain appscode.com
 
 kubebuilder create api --group employee --version v1alpha1 --kind Employee
+
+
+
 
 // TODO(user): Add simple overview of use/purpose
 

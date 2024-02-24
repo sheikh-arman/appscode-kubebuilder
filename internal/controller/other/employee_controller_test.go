@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package other
 
 import (
 	"context"
@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/v1alpha1"
+	otherv1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/other/v1alpha1"
 )
 
 var _ = Describe("Employee Controller", func() {
@@ -40,13 +40,13 @@ var _ = Describe("Employee Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		employee := &employeev1alpha1.Employee{}
+		employee := &otherv1alpha1.Employee{}
 
 		BeforeEach(func() {
 			By("creating the custom resource for the Kind Employee")
 			err := k8sClient.Get(ctx, typeNamespacedName, employee)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &employeev1alpha1.Employee{
+				resource := &otherv1alpha1.Employee{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -59,7 +59,7 @@ var _ = Describe("Employee Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &employeev1alpha1.Employee{}
+			resource := &otherv1alpha1.Employee{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
