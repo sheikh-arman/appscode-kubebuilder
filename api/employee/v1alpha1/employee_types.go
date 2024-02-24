@@ -29,7 +29,10 @@ type EmployeeSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of Employee. Edit employee_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	ApiImage        string `json:"apiimage,omitempty"`
+	DatabaseImage   string `json:"databaseimage,omitempty"`
+	ApiReplica      int    `json:"apireplica,omitempty"`
+	DatabaseReplica int    `json:"databasereplica,omitempty"`
 }
 
 // EmployeeStatus defines the observed state of Employee

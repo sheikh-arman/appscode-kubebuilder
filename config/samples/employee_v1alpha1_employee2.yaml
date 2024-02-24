@@ -1,0 +1,17 @@
+apiVersion: employee.appscode.com/v1alpha1
+kind: Employee
+metadata:
+  labels:
+    app.kubernetes.io/name: employee
+    app.kubernetes.io/instance: employee-sample
+    app.kubernetes.io/part-of: appscode-kubebuilder
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: appscode-kubebuilder
+  name: appscode
+  namespace: appscode
+spec:
+  apireplica: 1
+  apiimage: skaliarman/appscode-api-server:latest
+  databasereplica: 1
+  databaseimage: mysql:5.6
+  # TODO(user): Add fields here

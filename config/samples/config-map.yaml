@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  dbname: appscode
+  host: appscode-mysql.appscode:3306
+  # host: localhost:8080
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: appscode-cm
+  namespace: appscode

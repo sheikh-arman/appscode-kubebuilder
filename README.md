@@ -1,5 +1,6 @@
 # appscode-kubebuilder
 
+test with kind-cluster
 
 download kubebuilder and install locally.
 
@@ -12,6 +13,28 @@ sudo mv kubebuilder /usr/local/bin/
 kubebuilder init --domain appscode.com
 
 kubebuilder create api --group employee --version v1alpha1 --kind Employee
+
+make manifests
+
+make install
+
+make run
+
+kubectl get all -n appscode
+
+kubectl exec -it -n appscode pod/appscode-mysql-xxxxxxxxxxx -- sh
+
+mysql -uroot -p$MYSQL_ROOT_PASSWORD
+
+create database if not exists appscode;CREATE TABLE appscode.employee (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), salary VARCHAR(100));INSERT INTO appscode.employee ( name, salary) VALUES ( 'Arman', '55000');INSERT INTO appscode.employee ( name, salary) VALUES ( 'sourav', '55000');
+
+kubectl port-forward -n appscode svc/appscode 8080
+
+curl http://localhost:8080
+
+curl http://localhost:8080/employee
+
+
 
 
 
