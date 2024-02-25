@@ -23,6 +23,7 @@ import (
 
 	employeev1alpha1 "github.com/sheikh-arman/appscode-kubebuilder/api/employee/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -76,6 +77,7 @@ func (r *EmployeeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	r.createConfigMap(req.Namespace, employee)
 	r.createDatabaseDeployment(req.Name, employee)
 	r.createDatabaseService(req.Namespace, employee)
+	r.createJob(req.Namespace, employee)
 	r.createConfigMap(req.Namespace, employee)
 	r.createApiDeployment(req.Namespace, employee)
 	r.createApiService(req.Namespace, employee)
@@ -87,6 +89,57 @@ func (r *EmployeeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&employeev1alpha1.Employee{}).
 		Complete(r)
+}
+
+func (r *EmployeeReconciler) createJob(ns string, employee employeev1alpha1.Employee) {
+	//create deployment for the employee CR
+	name := employee.Name
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: ns,
+		},
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app": name,
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  name + "-job",
+							Image: "kanisterio/mysql-sidecar:0.44.0",
+							//Ports: []corev1.ContainerPort{
+							//	{
+							//		Name:          "http",
+							//		Protocol:      corev1.ProtocolTCP,
+							//		ContainerPort: 8080,
+							//	},
+							//},
+							Command: []string{
+								"/bin/sh",
+							},
+							Args: []string{
+								"-c",
+								"until mysql -h appscode-mysql.appscode -u root --password=arman -e 'show databases;';do echo 'waiting for db ready';sleep 3;done;echo 'Database ready';mysql -h appscode-mysql.appscode -u root --password=arman -e 'create database appscode;create table appscode.employee ( name varchar(50), salary int);insert into appscode.employee values (\"John Doe\", 5000);insert into appscode.employee values (\"James William\", 7000);select * from appscode.employee;'",
+							},
+						},
+					},
+					RestartPolicy: corev1.RestartPolicyNever,
+				},
+			},
+			BackoffLimit: int32Ptr(0),
+		},
+	}
+	llog.Printf("\n\n\n\nCreating job class for %s resource", name)
+	err := r.Create(context.Background(), job)
+	if err != nil {
+		llog.Printf("Error on creating job %s, err: %s", job, err.Error())
+		return
+	}
+	llog.Println("job created successfully")
 }
 
 func (r *EmployeeReconciler) createStorageClass(ns string, employee employeev1alpha1.Employee) {
