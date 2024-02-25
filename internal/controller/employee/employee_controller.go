@@ -66,6 +66,12 @@ func (r *EmployeeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		r.deleteDeployment(req.Namespace, req.Name)
 		r.deleteDeployment(req.Namespace, req.Name+"-mysql")
+		r.deleteService(req.Namespace, req.Name)
+		r.deleteService(req.Namespace, req.Name+"-mysql")
+		r.deleteJob(req.Namespace, req.Name)
+		r.deleteConfigMap(req.Namespace, req.Name)
+		r.deletePVC(req.Namespace, "mysql-pv-claim")
+		r.deleteStorageClass(req.Namespace, "standard2")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	llog.Println("test->>>>>>>>")
@@ -81,6 +87,7 @@ func (r *EmployeeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	r.createConfigMap(req.Namespace, employee)
 	r.createApiDeployment(req.Namespace, employee)
 	r.createApiService(req.Namespace, employee)
+	//r.deleteJob(req.Namespace, employee)
 	return ctrl.Result{}, nil
 }
 
@@ -158,7 +165,7 @@ func (r *EmployeeReconciler) createStorageClass(ns string, employee employeev1al
 	llog.Printf("Creating storage class for %s resource", storageClassName)
 	err := r.Create(context.Background(), storageClass)
 	if err != nil {
-		llog.Printf("Error on creating pvcy %s, err: %s", storageClassName, err.Error())
+		llog.Printf("Error on creating storage class %s, err: %s", storageClassName, err.Error())
 		return
 	}
 	llog.Println("pvc created successfully")
@@ -494,4 +501,61 @@ func (r *EmployeeReconciler) deleteDeployment(ns, employee string) {
 	}
 
 	fmt.Println("Deleted, depName: ", employee)
+}
+
+func (r *EmployeeReconciler) deleteService(ns, employee string) {
+	dep := &corev1.Service{}
+	err := r.Get(context.Background(), types.NamespacedName{Name: employee, Namespace: ns}, dep)
+	err = r.Delete(context.Background(), dep)
+	if err != nil {
+		llog.Println("error on deleting service, err: ", err.Error())
+	}
+
+	fmt.Println("Deleted, service Name: ", employee)
+}
+
+func (r *EmployeeReconciler) deleteJob(ns, employee string) {
+	dep := &batchv1.Job{}
+	err := r.Get(context.Background(), types.NamespacedName{Name: employee, Namespace: ns}, dep)
+	err = r.Delete(context.Background(), dep)
+	if err != nil {
+		llog.Println("error on deleting job, err: ", err.Error())
+	}
+
+	fmt.Println("Deleted, Job Name: ", employee)
+}
+
+func (r *EmployeeReconciler) deleteConfigMap(ns, employee string) {
+	dep := &corev1.ConfigMap{}
+	err := r.Get(context.Background(), types.NamespacedName{Name: employee, Namespace: ns}, dep)
+	err = r.Delete(context.Background(), dep)
+	if err != nil {
+		llog.Println("error on deleting Configmap, err: ", err.Error())
+	}
+
+	fmt.Println("Deleted, configmap Name: ", employee)
+}
+
+func (r *EmployeeReconciler) deletePVC(ns, employee string) {
+
+	dep := &corev1.PersistentVolumeClaim{}
+	err := r.Get(context.Background(), types.NamespacedName{Name: employee, Namespace: ns}, dep)
+	err = r.Delete(context.Background(), dep)
+	if err != nil {
+		llog.Println("error on deleting PVC, err: ", err.Error())
+	}
+
+	fmt.Println("Deleted, PVC Name: ", employee)
+}
+
+func (r *EmployeeReconciler) deleteStorageClass(ns, employee string) {
+	_ = ns
+	dep := &storagev1.StorageClass{}
+	err := r.Get(context.Background(), types.NamespacedName{Name: employee}, dep)
+	err = r.Delete(context.Background(), dep)
+	if err != nil {
+		llog.Println("error on deleting storage class, err: ", err.Error())
+	}
+
+	fmt.Println("Deleted, storage class Name: ", employee)
 }
