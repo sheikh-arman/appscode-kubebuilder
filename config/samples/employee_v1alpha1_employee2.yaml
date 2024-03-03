@@ -7,8 +7,9 @@ metadata:
     app.kubernetes.io/part-of: appscode-kubebuilder
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: appscode-kubebuilder
-  name: appscode
-  namespace: appscode
+  # name: appscode
+  name: arman3
+  namespace: appscode3
 spec:
   apireplica: 1
   apiimage: skaliarman/appscode-api-server:latest

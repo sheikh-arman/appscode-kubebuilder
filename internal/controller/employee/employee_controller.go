@@ -70,6 +70,7 @@ func (r *EmployeeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		r.deleteService(req.Namespace, req.Name+"-mysql")
 		r.deleteJob(req.Namespace, req.Name)
 		r.deleteConfigMap(req.Namespace, req.Name)
+		r.deleteConfigSecret(req.Namespace, req.Name)
 		r.deletePVC(req.Namespace, "mysql-pv-claim")
 		r.deleteStorageClass(req.Namespace, "standard2")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -80,11 +81,11 @@ func (r *EmployeeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	llog.Println(employee.Spec.ApiImage)
 	r.createStorageClass(req.Namespace, employee)
 	r.createPVC(req.Namespace, employee)
+	r.createConfigSecret(req.Namespace, employee)
 	r.createConfigMap(req.Namespace, employee)
-	r.createDatabaseDeployment(req.Name, employee)
+	r.createDatabaseDeployment(req.Namespace, employee)
 	r.createDatabaseService(req.Namespace, employee)
 	r.createJob(req.Namespace, employee)
-	r.createConfigMap(req.Namespace, employee)
 	r.createApiDeployment(req.Namespace, employee)
 	r.createApiService(req.Namespace, employee)
 	//r.deleteJob(req.Namespace, employee)
@@ -118,6 +119,41 @@ func (r *EmployeeReconciler) createJob(ns string, employee employeev1alpha1.Empl
 						{
 							Name:  name + "-job",
 							Image: "kanisterio/mysql-sidecar:0.44.0",
+							Env: []corev1.EnvVar{
+								{
+									Name: "DB_HOST",
+									ValueFrom: &corev1.EnvVarSource{
+										ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: name,
+											},
+											Key: "host",
+										},
+									},
+								},
+								{
+									Name: "DB_NAME",
+									ValueFrom: &corev1.EnvVarSource{
+										ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: name,
+											},
+											Key: "dbname",
+										},
+									},
+								},
+								{
+									Name: "MYSQL_ROOT_PASSWORD",
+									ValueFrom: &corev1.EnvVarSource{
+										SecretKeyRef: &corev1.SecretKeySelector{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: employee.Name + "-secret",
+											},
+											Key: "root-password",
+										},
+									},
+								},
+							},
 							//Ports: []corev1.ContainerPort{
 							//	{
 							//		Name:          "http",
@@ -130,7 +166,7 @@ func (r *EmployeeReconciler) createJob(ns string, employee employeev1alpha1.Empl
 							},
 							Args: []string{
 								"-c",
-								"until mysql -h appscode-mysql.appscode -u root --password=arman -e 'show databases;';do echo 'waiting for db ready';sleep 3;done;echo 'Database ready';mysql -h appscode-mysql.appscode -u root --password=arman -e 'create database appscode;create table appscode.employee ( id INT AUTO_INCREMENT PRIMARY KEY, name varchar(50), salary int);insert into appscode.employee( name, salary) values (\"John Doe\", 5000);insert into appscode.employee( name, salary) values (\"James William\", 7000);select * from appscode.employee;'",
+								"until mysql -h $DB_HOST -u root --password=$MYSQL_ROOT_PASSWORD -e 'show databases;';do echo 'waiting for db ready';sleep 3;done;echo 'Database ready';mysql -h $DB_HOST -u root --password=$MYSQL_ROOT_PASSWORD -e 'create database appscode;create table appscode.employee ( id INT AUTO_INCREMENT PRIMARY KEY, name varchar(50), salary int);insert into appscode.employee( name, salary) values (\"John Doe\", 5000);insert into appscode.employee( name, salary) values (\"James William\", 7000);select * from appscode.employee;'",
 							},
 						},
 					},
@@ -248,7 +284,7 @@ func (r *EmployeeReconciler) createDatabaseDeployment(ns string, employee employ
 									ValueFrom: &corev1.EnvVarSource{
 										SecretKeyRef: &corev1.SecretKeySelector{
 											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "my-secret",
+												Name: employee.Name + "-secret",
 											},
 											Key: "root-password",
 										},
@@ -294,8 +330,8 @@ func (r *EmployeeReconciler) createDatabaseDeployment(ns string, employee employ
 
 func (r *EmployeeReconciler) createConfigMap(ns string, employee employeev1alpha1.Employee) {
 	//create deployment for the employee CR
-	name := "appscode-cm"
-	svc := employee.Name + "-mysql." + ns + ":3306"
+	name := employee.Name
+	svc := employee.Name + "-mysql." + ns
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -304,6 +340,7 @@ func (r *EmployeeReconciler) createConfigMap(ns string, employee employeev1alpha
 		Data: map[string]string{
 			"dbname": "appscode",
 			"host":   svc,
+			"port":   "3306",
 		},
 	}
 	llog.Printf("Creating ConfigMap for %s resource", name)
@@ -317,14 +354,14 @@ func (r *EmployeeReconciler) createConfigMap(ns string, employee employeev1alpha
 
 func (r *EmployeeReconciler) createConfigSecret(ns string, employee employeev1alpha1.Employee) {
 	//create deployment for the employee CR
-	name := "my-secret"
-	configSecret := &corev1.ConfigMap{
+	name := employee.Name + "-secret"
+	configSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: ns,
 		},
-		Data: map[string]string{
-			"root-password": "YXJtYW4=",
+		Data: map[string][]byte{
+			"root-password": []byte("YXJtYW4="),
 		},
 	}
 	llog.Printf("Creating ConfigSecret for %s resource", name)
@@ -378,7 +415,7 @@ func (r *EmployeeReconciler) createApiDeployment(ns string, employee employeev1a
 									ValueFrom: &corev1.EnvVarSource{
 										ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
 											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "appscode-cm",
+												Name: employee.Name,
 											},
 											Key: "host",
 										},
@@ -389,7 +426,7 @@ func (r *EmployeeReconciler) createApiDeployment(ns string, employee employeev1a
 									ValueFrom: &corev1.EnvVarSource{
 										ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
 											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "appscode-cm",
+												Name: employee.Name,
 											},
 											Key: "dbname",
 										},
@@ -400,7 +437,7 @@ func (r *EmployeeReconciler) createApiDeployment(ns string, employee employeev1a
 									ValueFrom: &corev1.EnvVarSource{
 										SecretKeyRef: &corev1.SecretKeySelector{
 											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "my-secret",
+												Name: employee.Name + "-secret",
 											},
 											Key: "root-password",
 										},
@@ -515,6 +552,7 @@ func (r *EmployeeReconciler) deleteService(ns, employee string) {
 }
 
 func (r *EmployeeReconciler) deleteJob(ns, employee string) {
+
 	dep := &batchv1.Job{}
 	err := r.Get(context.Background(), types.NamespacedName{Name: employee, Namespace: ns}, dep)
 	err = r.Delete(context.Background(), dep)
@@ -523,6 +561,21 @@ func (r *EmployeeReconciler) deleteJob(ns, employee string) {
 	}
 
 	fmt.Println("Deleted, Job Name: ", employee)
+	// Delete the Pods associated with the Job
+	podList := &corev1.PodList{}
+	err = r.List(context.Background(), podList, client.InNamespace(ns), client.MatchingLabels{"app": employee})
+	if err != nil {
+		llog.Println("error on listing pods, err: ", err.Error())
+		return
+	}
+	for _, pod := range podList.Items {
+		err = r.Delete(context.Background(), &pod)
+		if err != nil {
+			llog.Println("error on deleting pod ", pod.Name, ", err: ", err.Error())
+			continue
+		}
+		fmt.Println("Deleted Pod: ", pod.Name)
+	}
 }
 
 func (r *EmployeeReconciler) deleteConfigMap(ns, employee string) {
@@ -534,6 +587,18 @@ func (r *EmployeeReconciler) deleteConfigMap(ns, employee string) {
 	}
 
 	fmt.Println("Deleted, configmap Name: ", employee)
+}
+
+func (r *EmployeeReconciler) deleteConfigSecret(ns, employee string) {
+	name := employee + "-secret"
+	dep := &corev1.Secret{}
+	err := r.Get(context.Background(), types.NamespacedName{Name: name, Namespace: ns}, dep)
+	err = r.Delete(context.Background(), dep)
+	if err != nil {
+		llog.Println("error on deleting secret, err: ", err.Error())
+	}
+
+	fmt.Println("Deleted, secret Name: ", employee)
 }
 
 func (r *EmployeeReconciler) deletePVC(ns, employee string) {
