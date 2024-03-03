@@ -130,7 +130,7 @@ func (r *EmployeeReconciler) createJob(ns string, employee employeev1alpha1.Empl
 							},
 							Args: []string{
 								"-c",
-								"until mysql -h appscode-mysql.appscode -u root --password=arman -e 'show databases;';do echo 'waiting for db ready';sleep 3;done;echo 'Database ready';mysql -h appscode-mysql.appscode -u root --password=arman -e 'create database appscode;create table appscode.employee ( name varchar(50), salary int);insert into appscode.employee values (\"John Doe\", 5000);insert into appscode.employee values (\"James William\", 7000);select * from appscode.employee;'",
+								"until mysql -h appscode-mysql.appscode -u root --password=arman -e 'show databases;';do echo 'waiting for db ready';sleep 3;done;echo 'Database ready';mysql -h appscode-mysql.appscode -u root --password=arman -e 'create database appscode;create table appscode.employee ( id INT AUTO_INCREMENT PRIMARY KEY, name varchar(50), salary int);insert into appscode.employee( name, salary) values (\"John Doe\", 5000);insert into appscode.employee( name, salary) values (\"James William\", 7000);select * from appscode.employee;'",
 							},
 						},
 					},
